@@ -4,12 +4,21 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(express.json());
 
-const testUsername = "stu123";
-const testPassword = "123";
-
-let loginRecords = [];
+let demoUsernames = [];
 
 app.get("/", (req, res) => {
   res.send("SocialConnect Backend is running!");
@@ -19,34 +28,29 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+// Receive a demo username only
 app.post("/demo-login", (req, res) => {
   const username = String(req.body.username || "").trim();
-  const password = String(req.body.password || "");
 
-  if (!username || !password) {
+  if (!username || username.length > 50) {
     return res.status(400).json({
-      message: "Enter the demo username and password."
+      message: "Enter a username up to 50 characters."
     });
   }
 
-  const success =
-    username === testUsername &&
-    password === testPassword;
-
-  loginRecords.push({
-    username,
-    result: success ? "Success" : "Failed",
+  demoUsernames.push({
+    username: username,
     time: new Date().toISOString()
   });
 
-  res.status(success ? 200 : 401).json({
-    success,
-    message: success ? "Demo login successful!" : "Login failed."
+  res.json({
+    message: "Demo username received!"
   });
 });
 
+// View submitted demo usernames
 app.get("/demo-logins", (req, res) => {
-  res.json(loginRecords);
+  res.json(demoUsernames);
 });
 
 app.listen(PORT, "0.0.0.0", () => {
