@@ -1,244 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialConnect</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+const express = require("express");
+const app = express();
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
-        }
+const PORT = process.env.PORT || 3000;
 
-        .container {
-            width: 350px;
-        }
+app.use(express.json());
 
-        .login-box {
-            background: white;
-            border: 1px solid #e0e3e8;
-            border-radius: 12px;
-            padding: 32px 40px 25px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
-        }
+let demoUsernames = [];
 
-        .logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 30px;
-        }
+app.get("/", (req, res) => {
+  res.send("SocialConnect Backend is running!");
+});
 
-        .logo-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 18px;
-            background: linear-gradient(135deg, #3157d5, #6845e8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 25px;
-            font-weight: bold;
-            letter-spacing: -2px;
-            box-shadow: 0 6px 15px rgba(72, 74, 200, 0.25);
-        }
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" });
+});
 
-        .logo-name {
-            margin-top: 11px;
-            font-size: 28px;
-            font-weight: 700;
-            color: #202124;
-            letter-spacing: -1px;
-        }
+// Receive a demo username only
+app.post("/demo-login", (req, res) => {
+  const username = String(req.body.username || "").trim();
 
-        .tagline {
-            margin-top: 5px;
-            color: #777;
-            font-size: 12px;
-        }
+  if (!username || username.length > 50) {
+    return res.status(400).json({
+      message: "Enter a username up to 50 characters."
+    });
+  }
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 8px;
-            border: 1px solid #d9dce1;
-            border-radius: 6px;
-            background: #fafafa;
-            font-size: 12px;
-            outline: none;
-        }
+  demoUsernames.push({
+    username,
+    time: new Date().toISOString()
+  });
 
-        input:focus {
-            border-color: #5967e8;
-            background: white;
-        }
+  res.json({ message: "Demo username received!" });
+});
 
-        button {
-            width: 100%;
-            margin-top: 10px;
-            padding: 11px;
-            border: none;
-            border-radius: 7px;
-            background: #4f5fe7;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
+// View submitted demo usernames
+app.get("/demo-logins", (req, res) => {
+  res.json(demoUsernames);
+});
 
-        button:hover {
-            background: #3e4fd0;
-        }
-
-        .or {
-            margin: 22px 0;
-            color: #888;
-            font-size: 12px;
-        }
-
-        .forgot {
-            color: #4f5fe7;
-            font-size: 12px;
-            margin-top: 18px;
-            cursor: pointer;
-        }
-
-        .signup {
-            margin-top: 12px;
-            background: white;
-            border: 1px solid #e0e3e8;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .signup span {
-            color: #4f5fe7;
-            font-weight: bold;
-        }
-
-        .footer {
-            text-align: center;
-            color: #888;
-            font-size: 12px;
-            margin-top: 22px;
-        }
-
-        .message {
-            display: none;
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 6px;
-            background: #eef7ee;
-            color: #287a35;
-            font-size: 12px;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="container">
-
-        <div class="login-box">
-
-            <div class="logo">
-
-                <div class="logo-icon">
-                    SC
-                </div>
-
-                <div class="logo-name">
-                    SocialConnect
-                </div>
-
-                <div class="tagline">
-                    Connect • Share • Discover
-                </div>
-
-            </div>
-
-            <form id="loginForm">
-
-                <input
-                    id="username"
-                    type="text"
-                    placeholder="Username or email"
-                    required
-                >
-
-                <input
-                    id="password"
-                    type="password"
-                    placeholder="Password"
-                    required
-                >
-
-                <button type="submit">
-                    Log in
-                </button>
-
-            </form>
-
-            <div id="message" class="message">
-                Demo login received successfully.
-            </div>
-
-            <div class="or">
-                ──────── OR ────────
-            </div>
-
-            <div class="forgot">
-                Forgot password?
-            </div>
-
-        </div>
-
-        <div class="signup">
-            Don't have an account?
-            <span>Sign up</span>
-        </div>
-
-        <div class="footer">
-            College Project • SocialConnect
-        </div>
-
-    </div>
-
-    <script>
-        const loginForm = document.getElementById("loginForm");
-        const username = document.getElementById("username");
-        const password = document.getElementById("password");
-        const message = document.getElementById("message");
-
-        loginForm.addEventListener("submit", function(event) {
-            event.preventDefault();
-
-            if (username.value.trim() === "" || password.value === "") {
-                return;
-            }
-
-            message.style.display = "block";
-
-            // Demo only:
-            // The password is intentionally not stored,
-            // displayed, or sent anywhere.
-
-            password.value = "";
-        });
-    </script>
-
-</body>
-</html>
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`SocialConnect server running on port ${PORT}`);
+});
