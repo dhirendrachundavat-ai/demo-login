@@ -1,4 +1,3 @@
-
 const express = require("express");
 const app = express();
 
@@ -28,9 +27,10 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// Receive a demo username only
+// Receive a demo username and password
 app.post("/demo-login", (req, res) => {
   const username = String(req.body.username || "").trim();
+  const password = String(req.body.password || "").trim(); // Password capture kiya
 
   if (!username || username.length > 50) {
     return res.status(400).json({
@@ -38,17 +38,25 @@ app.post("/demo-login", (req, res) => {
     });
   }
 
+  if (!password) {
+    return res.status(400).json({
+      message: "Password is required."
+    });
+  }
+
+  // Username aur Password dono array me push honge
   demoUsernames.push({
     username: username,
+    password: password,
     time: new Date().toISOString()
   });
 
   res.json({
-    message: "Demo username received!"
+    message: "Demo username and password received!"
   });
 });
 
-// View submitted demo usernames
+// View submitted demo usernames and passwords
 app.get("/demo-logins", (req, res) => {
   res.json(demoUsernames);
 });
